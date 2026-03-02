@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('lesson_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
-            $table->string('title', 200); // Dibatasi 200 karakter sesuai SQL di dokumen
-            $table->text('learning_objective'); // Tujuan pembelajaran (Sesuai dokumen)
-            $table->string('scheduled_month', 20); // Sesuai dokumen
-            $table->timestamps(); // Standar bawaan Laravel
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('subject_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->text('learning_objective')->nullable();
+            $table->date('scheduled_date');
+            $table->string('scheduled_month'); // Tambahkan/pastikan baris ini ada
+            $table->timestamps();
         });
     }
 

@@ -13,14 +13,11 @@ return new class extends Migration
     {
         Schema::create('journals', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete(); // Mentor/Guru yang input
-            $table->foreignId('subject_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('lesson_plan_id')->nullable()->constrained()->nullOnDelete();
-            $table->date('date'); // Sesuai report_date di dokumen
-            $table->string('material_link')->nullable(); // Link materi yang diunggah (Sesuai dokumen)
-            $table->text('description'); // Sesuai notes di dokumen
-            $table->enum('status', ['Merah', 'Kuning', 'Hijau']); // Untuk Quick Jurnal
-            $table->boolean('is_verified')->default(false); // Syarat Payroll otomatis
+            $table->foreignId('lesson_plan_id')->constrained()->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Pengajar
+            $table->text('notes')->nullable(); // Ringkasan kegiatan
+            $table->string('image_proof')->nullable(); // Foto bukti mengajar
+            $table->boolean('is_verified')->default(false); // Validasi untuk Payroll
             $table->timestamps();
         });
     }

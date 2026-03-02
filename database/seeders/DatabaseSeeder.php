@@ -12,7 +12,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Bikin Akun Admin, Mentor, Guru, dan Siswa
+        // 1. Buat Akun Master
         $admin = User::create([
             'name' => 'Admin DTP',
             'email' => 'admin@smktelkom.sch.id',
@@ -34,33 +34,46 @@ class DatabaseSeeder extends Seeder
             'role' => 'siswa',
         ]);
 
-        // 2. Bikin Mata Pelajaran
+        // 2. Buat Bidang (Subjects) + Harga Per Jam (Hourly Rate)
         $subjectWeb = Subject::create([
             'name' => 'Web Development',
-            'description' => 'Belajar bikin web dari nol sampai hosting.'
+            'slug' => 'web-development',
+            'description' => 'Belajar bikin web dari nol sampai hosting.',
+            'hourly_rate' => 150000 // Contoh honor per sesi/jam
         ]);
 
         $subjectUIUX = Subject::create([
             'name' => 'UI/UX Design',
-            'description' => 'Figma, Wireframing, dan Prototyping.'
+            'slug' => 'ui-ux-design',
+            'description' => 'Figma, Wireframing, dan Prototyping.',
+            'hourly_rate' => 125000
         ]);
 
-        // 3. Assign Mentor Budi ke Pelajaran Web Dev (Tabel Pivot)
+        // 3. Hubungkan User ke Bidang (Tabel Pivot)
+        // Mentor Budi mengajar Web Dev
         $mentor->subjects()->attach($subjectWeb->id);
 
-        // 4. Bikin Rencana Pembelajaran (Lesson Plan) buat Web Dev
+        // Siswa Andi mengambil kelas Web Dev
+        $siswa->subjects()->attach($subjectWeb->id);
+
+        // 4. Buat Rencana Pembelajaran (Lesson Plan)
+        // Sekarang wajib ada 'user_id' (siapa pengajarnya) dan 'scheduled_date'
         LessonPlan::create([
+            'user_id' => $mentor->id,
             'subject_id' => $subjectWeb->id,
             'title' => 'Pengenalan HTML & CSS',
             'learning_objective' => 'Siswa mampu membuat struktur web dasar dan styling.',
-            'scheduled_month' => 'Januari 2026',
+            'scheduled_date' => now()->format('Y-m-d'), // Set tanggal hari ini agar muncul di jadwal
+            'scheduled_month' => 'Maret 2026',
         ]);
 
         LessonPlan::create([
+            'user_id' => $mentor->id,
             'subject_id' => $subjectWeb->id,
             'title' => 'Laravel Basic',
             'learning_objective' => 'Siswa memahami MVC dan Routing di Laravel.',
-            'scheduled_month' => 'Februari 2026',
+            'scheduled_date' => now()->addDays(7)->format('Y-m-d'), // Jadwal minggu depan
+            'scheduled_month' => 'Maret 2026',
         ]);
     }
 }

@@ -9,14 +9,12 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
+    public function up()
     {
-        Schema::create('subjects', function (Blueprint $table) {
+        Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('name'); // Contoh: Web Development, UI/UX
-            $table->string('slug')->unique();
-            $table->text('description')->nullable();
-            $table->decimal('hourly_rate', 10, 2)->default(0); // Untuk Payroll Mentor
+            $table->string('key')->unique(); // Contoh: 'hourly_rate'
+            $table->string('value');          // Contoh: '150000'
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('subjects');
+        Schema::dropIfExists('settings');
     }
 };

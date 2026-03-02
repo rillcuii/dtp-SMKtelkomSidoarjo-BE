@@ -6,12 +6,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
-
+    use HasApiTokens, HasFactory, Notifiable;
     /**
      * The attributes that are mass assignable.
      *
@@ -47,14 +47,34 @@ class User extends Authenticatable
         ];
     }
 
+    // ... kodingan yang sudah kamu buat ...
+
     public function subjects()
     {
-        return $this->belongsToMany(Subject::class)->withTimestamps();
+        // Tambahkan nama tabel pivot secara eksplisit agar aman
+        return $this->belongsToMany(Subject::class, 'subject_user')->withTimestamps();
     }
 
-    // Relasi ke Jurnal (Karya/Laporan Mentor)
     public function journals()
     {
         return $this->hasMany(Journal::class);
     }
+
+    public function studentProfile()
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    // --- TAMBAHAN HELPER ROLE ---
+    public function isAdmin() { return $this->role === 'admin'; }
+    public function isGuru() { return $this->role === 'guru'; }
+    public function isMentor() { return $this->role === 'mentor'; }
+    public function isSiswa() { return $this->role === 'siswa'; }
+    
+    // Khusus untuk absen: Mempermudah akses data absen siswa
+    public function attendances()
+    {
+        return $this->hasMany(Attendances::class, 'student_id');
+    }
+
 }

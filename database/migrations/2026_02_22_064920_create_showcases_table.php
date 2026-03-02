@@ -18,7 +18,6 @@ return new class extends Migration
             $table->string('media_url'); // Link ke Cloud Storage (S3/GCS)
             $table->enum('media_type', ['image', 'video', 'pdf', 'link']);
             $table->text('description')->nullable();
-            $table->integer('likes_count')->default(0); // Gamifikasi
             $table->timestamps();
         });
     }

@@ -10,6 +10,7 @@ use App\Http\Controllers\ShowcaseController;
 use App\Http\Controllers\SubjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LessonPlanController;
 
 Route::post('/login', [AuthController::class, 'login']);
 
@@ -26,6 +27,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/me', function (Request $request) {
         return $request->user()->load(['subjects', 'studentProfile']);
     });
+
+    Route::post('/lesson-plans', [LessonPlanController::class, 'store']);
+    Route::get('/lesson-plans/dropdown', [LessonPlanController::class, 'getDropdown']);
 
     Route::post('/showcases/{showcase_id}/comments', [CommentController::class, 'store']);
 

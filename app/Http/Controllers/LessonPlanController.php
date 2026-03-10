@@ -92,4 +92,47 @@ class LessonPlanController extends Controller
             'data'    => $lessonPlan
         ], 201);
     }
+
+    /**
+     * 4. TAMPILKAN JADWAL MENGAJAR (Global)
+     * Ditarik dari data materi yang sudah di-upload semua mentor
+     */
+    public function getSchedule(Request $request)
+    {
+        // Tarik semua data lesson plan (materi) beserta relasinya
+        // Kita urutkan berdasarkan tanggal paling dekat
+        $schedules = LessonPlan::with(['subject', 'user'])
+            ->orderBy('scheduled_date', 'asc')
+            ->get();
+
+        // Kita kelompokkan datanya berdasarkan 'scheduled_date'
+        // Biar Frontend gampang bikin UI per hari (Rabu, Kamis, dst)
+        $groupedSchedules = $schedules->groupBy('scheduled_date');
+
+        $formattedData = [];
+
+        foreach ($groupedSchedules as $date => $plans) {
+            // Ubah format tanggal jadi nama hari (Opsional, FE juga bisa ngelakuin ini)
+            $dayName = \Carbon\Carbon::parse($date)->locale('id')->isoFormat('dddd, D MMMM YYYY');
+
+            $formattedData[] = [
+                'date'      => $date,
+                'day_name'  => $dayName,
+                'lessons'   => $plans->map(function ($plan) {
+                    return [
+                        'lesson_id'    => $plan->id,
+                        'subject_name' => $plan->subject->name ?? 'Tanpa Bidang',
+                        'topic'        => $plan->title, // Judul materi sebagai ganti deksripsi
+                        'mentor_name'  => $plan->user->name ?? 'Tanpa Nama',
+                        'mentor_role'  => $plan->user->role ?? 'guru', // Buat nentuin badge "Internal" / "Industrial" di UI
+                    ];
+                })
+            ];
+        }
+
+        return response()->json([
+            'message' => 'Berhasil mengambil jadwal mengajar',
+            'data'    => $formattedData
+        ], 200);
+    }
 }

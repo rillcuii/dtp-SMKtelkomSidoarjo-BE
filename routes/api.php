@@ -73,8 +73,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/lesson-plans', [LessonPlanController::class, 'store']); // Simpan baru
         Route::get('/lesson-plans/{id}', [LessonPlanController::class, 'show']); // Narik detail
         // Route::get('/lesson-plans/dropdown', [LessonPlanController::class, 'getDropdown']);
-
-        
+        // jadwal mengajar
+        Route::get('/schedules', [LessonPlanController::class, 'getSchedule']);
     });
 
     //khusus mentor

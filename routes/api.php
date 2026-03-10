@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\JournalController;
+use App\Http\Controllers\LessonPlanController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShowcaseController;
@@ -67,11 +68,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     //Khusus Guru & Mentor
     Route::middleware('role:guru,mentor')->group(function () {
-        // Tarik data buat dropdown materi
-        Route::get('/lesson-plans', [JournalController::class, 'getLessonPlans']);
+        //lesson plan management
+        Route::get('/lesson-plans', [LessonPlanController::class, 'index']); // Narik list
+        Route::post('/lesson-plans', [LessonPlanController::class, 'store']); // Simpan baru
+        Route::get('/lesson-plans/{id}', [LessonPlanController::class, 'show']); // Narik detail
+        // Route::get('/lesson-plans/dropdown', [LessonPlanController::class, 'getDropdown']);
 
-        // Kirim/Submit form jurnal
-        Route::post('/journals', [JournalController::class, 'store']);
+        
     });
 
     //khusus mentor

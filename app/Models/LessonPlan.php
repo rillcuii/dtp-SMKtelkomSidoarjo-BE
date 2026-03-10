@@ -9,14 +9,15 @@ class LessonPlan extends Model
 {
     use HasFactory;
 
-    // Pastikan fillable sesuai dengan migration terbaru kita
     protected $fillable = [
         'user_id',
         'subject_id',
-        'title',
-        'learning_objective', // atau 'description' sesuai migration kamu
-        'scheduled_date',     // Tanggal spesifik (Penting untuk filter jadwal hari ini)
-        'scheduled_month'     // Untuk grouping bulanan
+        'title',              // Di UI ini jadi "Topik Pembelajaran"
+        'learning_objective', // Di UI ini jadi "Tujuan Pembelajaran"
+        'media_type',         // BARU: Dari UI Step 3 (Tipe Media)
+        'media_url',          // BARU: Dari UI Step 3 (Link/URL)
+        'scheduled_date',
+        'scheduled_month'
     ];
 
     /**

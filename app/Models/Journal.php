@@ -11,46 +11,32 @@ class Journal extends Model
 
     protected $fillable = [
         'user_id',
-        'subject_id', // Boleh tetap ada sebagai shortcut
-        'lesson_plan_id',
-        'date',
-        'material_link',
-        'description', // Atau 'notes' sesuai migration kamu
-        'image_proof',  // Tambahkan ini jika di migration ada foto bukti
-        'status',       // Misalnya: Draft/Published
-        'is_verified',  // Kunci untuk Payroll
+        'subject_id',      // Bidang (UI/UX, dll)
+        'lesson_plan_id',  // Link ke materi planner
+        'date',            // Tanggal mengajar
+        'session_type',    // 'Reguler' atau 'Penilaian'
+        'notes',           // Ringkasan aktivitas & kendala
+        'image_proof',     // Foto bukti
+        'is_verified',     // Status untuk Payroll
     ];
 
-    /**
-     * Relasi ke Pengajar
-     */
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Relasi ke Bidang
-     */
     public function subject()
     {
         return $this->belongsTo(Subject::class);
     }
 
-    /**
-     * Relasi ke Rencana Materi (Planner)
-     */
     public function lessonPlan()
     {
         return $this->belongsTo(LessonPlan::class);
     }
 
-    /**
-     * RELASI PALING PENTING: Ke daftar Absensi & Nilai Siswa
-     * Dengan ini kita bisa panggil: $journal->attendances
-     */
     public function attendances()
     {
-        return $this->hasMany(Attendances::class);
+        return $this->hasMany(Attendances::class, 'journal_id');
     }
 }

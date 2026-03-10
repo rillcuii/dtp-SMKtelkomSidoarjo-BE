@@ -12,37 +12,58 @@ use Illuminate\Support\Facades\Hash;
 class AdminController extends Controller
 {
     /**
-     * Melihat semua jurnal yang masuk dari semua mentor
+     * Tampilkan semua jurnal yang masuk (Antrean Verifikasi)
      */
-    public function getAllJournals()
+    public function indexJournal(Request $request)
     {
-        $journals = Journal::with(['user:id,name', 'subject:id,name', 'lessonPlan:id,title'])
-            ->latest()
-            ->get();
+        // Admin bisa filter: ?is_verified=0 untuk liat yang belum di-acc
+        $query = Journal::with(['user', 'subject', 'lessonPlan']);
+
+        if ($request->has('is_verified')) {
+            $query->where('is_verified', $request->is_verified);
+        }
+
+        // Urutkan dari yang terbaru
+        $journals = $query->latest()->paginate(15);
 
         return response()->json([
-            'success' => true,
+            'status' => 'success',
             'data' => $journals
         ]);
     }
 
     /**
-     * Verifikasi Jurnal (Tombol ACC Admin)
+     * Lihat Detail Jurnal (Cek foto bukti & absen siswa)
+     */
+    public function showJournal($id)
+    {
+        $journal = Journal::with([
+            'user',
+            'subject',
+            'lessonPlan',
+            'attendances.student' // Kita ambil data absen sekaligus nama siswanya
+        ])->findOrFail($id);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $journal
+        ]);
+    }
+
+    /**
+     * Tombol ACC / Verifikasi Jurnal
      */
     public function verifyJournal($id)
     {
-        $journal = Journal::find($id);
+        $journal = Journal::findOrFail($id);
 
-        if (!$journal) {
-            return response()->json(['message' => 'Jurnal tidak ditemukan'], 404);
-        }
-
-        $journal->update(['is_verified' => true]);
+        $journal->update([
+            'is_verified' => true
+        ]);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Jurnal berhasil diverifikasi untuk payroll!',
-            'data' => $journal
+            'status' => 'success',
+            'message' => 'Jurnal berhasil diverifikasi. Data ini sudah masuk ke hitungan Payroll.'
         ]);
     }
 

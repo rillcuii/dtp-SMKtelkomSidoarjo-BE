@@ -39,11 +39,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Khusus Admin
     Route::middleware('role:admin')->group(function () {
-        // Lihat semua list jurnal
-        Route::get('/admin/journals', [AdminController::class, 'getAllJournals']);
-
-        // Verifikasi jurnal tertentu
-        Route::patch('/admin/journals/{id}/verify', [AdminController::class, 'verifyJournal']);
+        // JURNAL MANAGEMENT
+        Route::get('/journals', [AdminController::class, 'indexJournal']);
+        Route::get('/journals/{id}', [AdminController::class, 'showJournal']);
+        Route::put('/journals/{id}/verify', [AdminController::class, 'verifyJournal']);
 
         // USER MANAGEMENT
         Route::post('/register', [AuthController::class, 'register']);
@@ -75,6 +74,10 @@ Route::middleware('auth:sanctum')->group(function () {
         // Route::get('/lesson-plans/dropdown', [LessonPlanController::class, 'getDropdown']);
         // jadwal mengajar
         Route::get('/schedules', [LessonPlanController::class, 'getSchedule']);
+
+        //isi journal sesi reguler
+        Route::get('/journal/form-data', [JournalController::class, 'getFormData']);
+        Route::post('/journal/store', [JournalController::class, 'store']);
     });
 
     //khusus mentor

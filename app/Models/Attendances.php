@@ -9,32 +9,26 @@ class Attendances extends Model
 {
     use HasFactory;
 
-    // Nama tabel jika kamu membuat migration dengan nama 'attendances' (jamak) 
-    // tapi modelnya 'Attendance' (tunggal), Laravel biasanya otomatis. 
-    // Tapi jika modelmu namanya 'Attendances' (pakai s), sebaiknya ubah jadi 'Attendance' agar standar.
+    // Pakai protected $table jika nama tabel di DB kamu 'attendances' 
+    // tapi nama Model-nya pakai akhiran 's' (Attendances)
+    protected $table = 'attendances';
 
     protected $fillable = [
-        'journal_id', 
-        'student_id', 
-        'status', 
-        'competence_status', 
-        'showcase_status', 
-        'mapping_status', 
-        'score'
+        'journal_id',
+        'student_id',
+        'status',                   // Hadir, Alfa, dll
+        'competence_status',        // Capaian Kompetensi
+        'showcase_status',          // Status Portofolio
+        'is_competition_candidate', // Kandidat Lomba (Boolean)
+        'is_recovery_needed',       // Perlu Recovery (Boolean)
+        'score'                     // Nilai angka (jika ada)
     ];
 
-    /**
-     * Relasi ke Jurnal (Induknya)
-     */
     public function journal()
     {
         return $this->belongsTo(Journal::class);
     }
 
-    /**
-     * Relasi ke Siswa (User)
-     * Kita arahkan student_id ke model User
-     */
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');

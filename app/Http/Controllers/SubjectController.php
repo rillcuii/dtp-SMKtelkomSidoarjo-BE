@@ -3,103 +3,112 @@
 namespace App\Http\Controllers;
 
 use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class SubjectController extends Controller
 {
-    // List semua bidang
-    public function index()
-    {
-        $subjects = Subject::all();
-        return response()->json([
-            'success' => true,
-            'data'    => $subjects
-        ]);
+    // 1. LIHAT SEMUA (LIST BIDANG + MENTOR + SISWA)
+public function index()
+{
+    // Eager load users (tarik sekali jalan supaya laju)
+    $subjects = Subject::with('users')->get();
+
+    $data = $subjects->map(function ($subject) {
+        return [
+            'id' => $subject->id,
+            'name' => $subject->name,
+            'description' => $subject->description,
+            'teacher_initials' => $subject->teacher_initials, 
+            // Filter Mentor/Guru
+            'teachers' => $subject->users->whereIn('role', ['mentor', 'guru'])->map(fn($u) => [
+                'id' => $u->id,
+                'name' => $u->name,
+                'role' => $u->role
+            ])->values(),
+            // Filter Siswa
+            // 'students' => $subject->users->where('role', 'siswa')->map(fn($s) => [
+            //     'id' => $s->id,
+            //     'name' => $s->name
+            // ])->values(),
+            // 'total_students' => $subject->users->where('role', 'siswa')->count()
+        ];
+    });
+
+    return response()->json(['success' => true, 'data' => $data]);
+}
+
+// 2. STORE (TAMBAH BIDANG)
+public function store(Request $request)
+{
+    $request->validate([
+        'name' => 'required|unique:subjects,name', // Tak boleh ada nama bidang sama
+        'description' => 'nullable|string',
+        'teacher_ids' => 'nullable|array',
+        'teacher_ids.*' => 'exists:users,id'
+    ]);
+
+    $subject = Subject::create([
+        'name' => $request->name,
+        'slug' => \Illuminate\Support\Str::slug($request->name),
+        'description' => $request->description,
+    ]);
+
+    if ($request->has('teacher_ids')) {
+        $subject->users()->sync($request->teacher_ids);
     }
 
-    // Simpan Bidang Baru
-    public function store(Request $request)
-    {
-        $request->validate([
-            'name' => 'required|unique:subjects,name',
-            'description' => 'nullable'
-        ]);
+    return response()->json(['success' => true, 'message' => 'Bidang berhasil dibuat!']);
+}
 
-        $subject = Subject::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-        ]);
+// 3. UPDATE (EDIT BIDANG & TUKAR MENTOR)
+public function update(Request $request, $id)
+{
+    $subject = Subject::findOrFail($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Bidang berhasil dibuat!',
-            'data'    => $subject
-        ], 201);
+    $request->validate([
+        'name' => 'required|unique:subjects,name,' . $id,
+        'teacher_ids' => 'nullable|array',
+        'teacher_ids.*' => 'exists:users,id', // <--- TAMBAHKAN INI
+    ]);
+
+    $subject->update([
+        'name' => $request->name,
+        'slug' => \Illuminate\Support\Str::slug($request->name),
+        'description' => $request->description,
+    ]);
+
+    if ($request->has('teacher_ids')) {
+        $subject->users()->sync($request->teacher_ids);
     }
 
-    // Ambil detail satu bidang
-    public function show($id)
-    {
-        $subject = Subject::find($id);
-        if (!$subject) {
-            return response()->json(['message' => 'Bidang tidak ditemukan'], 404);
-        }
-        return response()->json(['success' => true, 'data' => $subject]);
-    }
+    return response()->json(['success' => true, 'message' => 'Data bidang & mentor berhasil diperbarui!']);
+}
 
-    // Update Bidang
-    public function update(Request $request, $id)
-    {
-        $subject = Subject::findOrFail($id);
+public function availableTeachers()
+{
+    $teachers = User::whereIn('role', ['mentor', 'guru'])->get(['id', 'name', 'role']);
+    return response()->json(['success' => true, 'data' => $teachers]);
+}
 
-        $request->validate([
-            'name' => 'required|unique:subjects,name,' . $id,
-        ]);
+// 4. DELETE (HAPUS BIDANG)
+public function destroy($id)
+{
+    // Cari bidangnya, kalau nggak ada langsung error 404
+    $subject = Subject::findOrFail($id);
 
-        $subject->update([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-        ]);
+    // Putus hubungan bidang ini dengan siapapun (mentor/siswa) di tabel pivot
+    // Ini penting supaya nggak ada data "yatim piatu" di tabel subject_user
+    $subject->users()->detach();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Bidang berhasil diupdate!',
-            'data'    => $subject
-        ]);
-    }
+    // Baru hapus bidangnya
+    $subject->delete();
 
-    // Hapus Bidang
-    public function destroy($id)
-    {
-        $subject = Subject::find($id);
-        if (!$subject) {
-            return response()->json(['message' => 'Bidang tidak ditemukan'], 404);
-        }
-        $subject->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Bidang berhasil dihapus'
-        ]);
-    }
-
-    public function selfAssignSubject(Request $request)
-    {
-        $request->validate([
-            'subject_ids' => 'required|array',
-            'subject_ids.*' => 'exists:subjects,id',
-        ]);
-
-        $user = auth()->user(); // Ambil user dari token login
-        $user->subjects()->sync($request->subject_ids);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Berhasil memilih bidang!',
-            'data' => $user->load('subjects')
-        ]);
-    }
+    return response()->json([
+        'success' => true, 
+        'message' => 'Bidang berhasil dihapus!'
+    ]);
+}
+    
 }

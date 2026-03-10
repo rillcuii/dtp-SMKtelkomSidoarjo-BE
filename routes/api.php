@@ -57,9 +57,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/admin/users/assign-subject', [AdminController::class, 'assignSubject']);
 
         // bidang management
+        Route::get('/admin/subjects/available-teachers', [SubjectController::class, 'availableTeachers']);
         Route::get('/admin/subjects', [SubjectController::class, 'index']);           // List semua bidang
         Route::post('/admin/subjects/store', [SubjectController::class, 'store']);    // Tambah bidang baru
-        Route::get('/admin/subjects/{id}', [SubjectController::class, 'show']);       // Detail bidang
+       // Route::get('/admin/subjects/{id}', [SubjectController::class, 'show']);       // Detail bidang
         Route::put('/admin/subjects/{id}/update', [SubjectController::class, 'update']); // Update bidang
         Route::delete('/admin/subjects/{id}/delete', [SubjectController::class, 'destroy']); // Hapus bidang
 
